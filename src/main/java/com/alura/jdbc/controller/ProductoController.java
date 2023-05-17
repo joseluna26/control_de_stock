@@ -1,6 +1,8 @@
 package com.alura.jdbc.controller;
 
 import com.alura.jdbc.factory.ConnectionFactory;
+import com.alura.jdbc.modelo.Producto;
+import com.alura.jdbc.dao.ProductoDAO;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -79,53 +81,8 @@ public class ProductoController {
         }
     }
 
-    public void guardar(Map<String, String> producto) throws SQLException {
-        String nombre = producto.get("NOMBRE");
-        String descripcion = producto.get("DESCRIPCION");
-        int cantidad = Integer.parseInt(producto.get("CANTIDAD"));
-        Integer maximoCantidad = 50;
-
-        final Connection con = new ConnectionFactory().recuperaConexion();
-
-        try (con) {
-            con.setAutoCommit(false);
-
-            final PreparedStatement statement = con.prepareStatement("INSERT INTO PRODUCTO(nombre, descripcion, cantidad) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
-
-            try (statement) {
-                do {
-                    int cantidadParaGuardar = Math.min(cantidad, maximoCantidad);
-                    ejecutaRegistro(statement, nombre, descripcion, cantidadParaGuardar);
-
-                    cantidad -= maximoCantidad;
-                } while (cantidad > 0);
-                con.commit();
-                System.out.println("COMMIT");
-            } catch (Exception e) {
-                con.rollback();
-                System.out.println("ROLLBACK");
-            }
-        }
-    }
-
-    private void ejecutaRegistro(PreparedStatement statement, String nombre, String descripcion, int cantidad) throws SQLException {
-
-        if (cantidad < 50) {
-            throw new RuntimeException("Ocurrió un error!");
-        }
-
-        statement.setString(1, nombre);
-        statement.setString(2, descripcion);
-        statement.setInt(3, cantidad);
-
-        statement.execute();
-
-        final ResultSet resultset = statement.getGeneratedKeys();
-
-        try (resultset) {
-            while (resultset.next()) {
-                System.out.println(String.format("Fue insertado el producto de ID %d", resultset.getInt(1)));
-            }
-        }
+    public void guardar(Producto producto) throws SQLException {
+        ProductoDAO productoDAO = new ProductoDAO(new ConnectionFactory().recuperaConexion());
+        productoDAO.guardar(producto);
     }
 }
