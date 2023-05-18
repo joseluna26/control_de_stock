@@ -3,6 +3,8 @@ package com.alura.jdbc.factory;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.sql.DataSource;
 
 public class ConnectionFactory {
@@ -19,7 +21,12 @@ public class ConnectionFactory {
         this.datasource = poolDatasource;
     }
     
-    public Connection recuperaConexion() throws SQLException{
-                return this.datasource.getConnection();
+    public Connection recuperaConexion(){
+        
+         try {
+             return this.datasource.getConnection();
+         } catch (SQLException e) {
+             throw new RuntimeException(e);
+         }
     }
 }
